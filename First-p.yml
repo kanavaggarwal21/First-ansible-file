@@ -1,0 +1,70 @@
+- hosts: fortigates
+  connection: httpapi
+  collections:
+  - fortinet.fortios
+  vars:
+   vdom: "root"
+   ansible_httpapi_use_ssl: yes
+   ansible_httpapi_validate_certs: no
+   ansible_httpapi_port: 443
+  tasks:
+   - name: Configure global attributes.
+     fortios_system_global:
+        vdom:  "{{ vdom }}"
+        system_global:
+            hostname: "FW01"
+            admintimeout: "22"
+   - name: SNMP system info configuration.
+     fortios_system_snmp_sysinfo:
+      vdom:  "{{ vdom }}"
+      system_snmp_sysinfo:
+        contact_info: "support team"
+        description: "SNMP test"
+        location: "SNMP LOCATION"
+        status: "enable"
+   - name: SNMP community configuration.
+     fortios_system_snmp_community:
+      vdom:  "{{ vdom }}"
+      state: "present"
+      system_snmp_community:
+        hosts:
+         -
+            ha_direct: "enable"
+            host_type: "any"
+            id:  "1"
+            ip: "10.2.1.1"
+        id:  "1"
+        name: "default_name_17"
+        query_v2c_port: "162"
+        query_v2c_status: "enable"
+        status: "enable"
+        trap_v2c_lport: "161"
+        trap_v2c_rport: "161"
+        trap_v2c_status: "enable"
+   - name: Global settings for remote syslog server.
+     fortios_log_syslogd_setting:
+      vdom:  "{{ vdom }}"
+      log_syslogd_setting:
+        facility: "kernel"
+        format: "default"
+        mode: "udp"
+        port: "514"
+        server: "192.168.100.40"
+        status: "enable"
+   - name: Configure DNS.
+     fortios_system_dns:
+      vdom:  "{{ vdom }}"
+      system_dns:
+        domain: "fortinet.com"
+        primary: "192.168.100.40"
+   - name: Configure system NTP information.
+     fortios_system_ntp:
+      vdom:  "{{ vdom }}"
+      system_ntp:
+        ntpserver:
+         -
+            server: "192.168.100.40"
+            id: "1"
+        ntpsync: "enable"
+        syncinterval: "15"
+        type: "custom"

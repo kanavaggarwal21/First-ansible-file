@@ -7,6 +7,46 @@
    ansible_httpapi_use_ssl: yes
    ansible_httpapi_validate_certs: no
    ansible_httpapi_port: 443
+   system_accprofile_list:
+      - name: "noaccess"
+        comments: "noaccess"
+        authgrp: "none"
+        ftviewgrp: "none"
+        fwgrp: "none"
+        loggrp: "none"
+        netgrp: "none"
+        secfabgrp: "none"
+        sysgrp: "none"
+        utmgrp: "none"
+        vpngrp: "none"
+        wanoptgrp: "none"
+        wifi: "none"
+      - name: "Read_only"
+        comments: "Readonly_profile"
+        authgrp: "read"
+        ftviewgrp: "read"
+        fwgrp: "read"
+        loggrp: "read"
+        netgrp: "read"
+        secfabgrp: "read"
+        sysgrp: "read"
+        utmgrp: "read"
+        vpngrp: "read"
+        wanoptgrp: "read"
+        wifi: "read"
+      - name: "Admin_profile"
+        comments: "Admin_profile"
+        authgrp: "read-write"
+        ftviewgrp: "read-write"
+        fwgrp: "read-write"
+        loggrp: "read-write"
+        netgrp: "read-write"
+        secfabgrp: "read-write"
+        sysgrp: "read-write"
+        utmgrp: "read-write"
+        vpngrp: "read-write"
+        wanoptgrp: "read-write"
+        wifi: "read-write"
   tasks:
    - name: Configure global attributes.
      fortios_system_global:
@@ -68,3 +108,57 @@
         ntpsync: "enable"
         syncinterval: "15"
         type: "custom"
+   - name: Configure access profiles for system administrators
+     fortinet.fortios.fortios_system_accprofile:
+       state: present
+       system_accprofile:
+         name: "{{ item.name }}"
+         comments: "{{ item.comments }}"
+         authgrp: "{{ item.authgrp }}"
+         ftviewgrp: "{{ item.ftviewgrp }}"
+         fwgrp: "{{ item.fwgrp }}"
+         loggrp: "{{ item.loggrp }}"
+         netgrp: "{{ item.netgrp }}"
+         secfabgrp: "{{ item.secfabgrp }}"
+         sysgrp: "{{ item.sysgrp }}"
+         utmgrp: "{{ item.utmgrp }}"
+         vpngrp: "{{ item.vpngrp }}"
+         wanoptgrp: "{{ item.wanoptgrp }}"
+         wifi: "{{ item.wifi }}"
+     loop: "{{ system_accprofile_list }}"
+   - name: Configure TACACS+ server entries.
+     fortios_user_tacacsplus:
+      vdom:  "{{ vdom }}"
+      state: "present"
+      user_tacacsplus:
+        authorization: "enable"
+        key: "Fortinet"
+        name: "TACACS1"
+        secondary_key: "Fortinet"
+        secondary_server: "2.2.2.2"
+        server: "1.1.1.1"
+   - name: Configure user groups.
+     fortios_user_group:
+      vdom:  "{{ vdom }}"
+      state: "present"
+      user_group:
+        member:
+         -
+            name: "TACACS1"
+        name: "TACACS+"
+   - name: Configure admin users.
+     fortios_system_admin:
+      vdom:  "{{ vdom }}"
+      state: "present"
+      system_admin:
+        accprofile: "noaccess"
+        accprofile_override: "enable"
+        name: "TACACS_USER"
+        remote_auth: "enable"
+        remote_group: "TACACS+"
+        trusthost1: "10.0.0.0 255.0.0.0"
+        two_factor: "disable"
+        vdom:
+         -
+            name: "root"
+        wildcard: "enable"
